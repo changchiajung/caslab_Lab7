@@ -76,7 +76,7 @@ int main(void) {
    * 並且將他 assign 給 上面的 iic 變數
    * {
    */
-  iic = iic_get_dev(DFSS_IIC_0_ID);		
+  iic = iic_get_dev(DFSS_IIC_0_ID);
   /**
    * }
    */
@@ -86,7 +86,7 @@ int main(void) {
    * 同時給予 IIC_SPEED_STANDARD 的傳輸速度即可
    * {
    */
-	iic->iic_open(DEV_MASTER_MODE, IIC_SPEED_STANDARD);
+  iic->iic_open(DEV_MASTER_MODE, IIC_SPEED_STANDARD);
   /**
    * }
    */
@@ -118,7 +118,7 @@ void Lcd_Write(const char Chr) {
    * 將Master的目標位址設定成LCD的地址 - 0x3E
    * {
    */
-  iic->iic_control(IIC_CMD_MST_SET_TAR_ADDR,LCD_ADDRESS);
+  iic->iic_control(IIC_CMD_MST_SET_TAR_ADDR, LCD_ADDRESS);
   /**
    * }
    */
@@ -128,7 +128,7 @@ void Lcd_Write(const char Chr) {
    * 注意因為每次傳送都是一個byte，所以型別寫uint8_t/char都可以
    * {
    */
-  uint8_t data[2] = {0x40, Chr}; 
+  uint8_t data[2] = {0x40, Chr};
   /**
    * }
    */
@@ -137,7 +137,7 @@ void Lcd_Write(const char Chr) {
    * 透過iic_write寫出去
    * {
    */
-  iic->iic_write(data,2); 
+  iic->iic_write(data, 2);
   /**
    * }
    */

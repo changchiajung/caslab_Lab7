@@ -21,7 +21,7 @@
  * 宣告 GPIO 物件
  * {
  */
-DEV_GPIO_PTR pUltraSonicGpioObject;
+DEV_GPIO_PTR pUltraSonicGpio;
 /**
  * }
  */
@@ -44,9 +44,8 @@ int main(void) {
 	 * 將signal腳位設為輸出腳位
 	 * {
      */
-	pUltraSonicGpioObject = gpio_get_dev(UltraSonicPort);
-	pUltraSonicGpioObject->gpio_open((1 << UltraSonicPin));	
-	
+	pUltraSonicGpio = gpio_get_dev(UltraSonicPort);
+	pUltraSonicGpio->gpio_open((1 << UltraSonicPin));
 	/**
 	 * }
 	 */
@@ -56,7 +55,7 @@ int main(void) {
 		 * 將超音波signal腳位設為輸出
 		 * {
 		 */
-		pUltraSonicGpioObject->gpio_control(GPIO_CMD_SET_BIT_DIR_OUTPUT, (void *)(1 << UltraSonicPin));
+		pUltraSonicGpio->gpio_control(GPIO_CMD_SET_BIT_DIR_OUTPUT, (void *)(1 << UltraSonicPin));
 		/**
 		 * }
 		 */
@@ -70,7 +69,7 @@ int main(void) {
 		 */
 		timer_stop(TIMER_0);
 		int_handler_install(INTNO_TIMER0, Timer0_ISR);
-		timer_enable(INTNO_TIMER0);
+		int_enable(INTNO_TIMER0);
 		timer_start(TIMER_0, TIMER_CTRL_IE, 0.000005 * CLK_CPU);
 		/**
 		 * }
@@ -80,8 +79,7 @@ int main(void) {
 		 * 將超音波signal腳位設為高電位
 		 * {
 		 */
-                pUltraSonicGpioObject->gpio_write(1 << UltraSonicPin, 1 << UltraSonicPin);
-		
+		pUltraSonicGpio->gpio_write(1 << UltraSonicPin, 1 << UltraSonicPin);
 		/**
 		 * }
 		 */
@@ -93,8 +91,8 @@ int main(void) {
 		 * {
 		*/
 		isInterrupted = false;
-                while (!isInterrupted) ;		
-		pUltraSonicGpioObject->gpio_write(0 << UltraSonicPin, 1 << UltraSonicPin);
+		while (!isInterrupted) ;
+		pUltraSonicGpio->gpio_write(0 << UltraSonicPin, 1 << UltraSonicPin);
 		/**
 		 * }
 		 */
@@ -106,10 +104,10 @@ int main(void) {
 		 * 等待signal腳位變為高電位
 		 * {
 		 */
-		 timer_stop(TIMER_0);
-                 pUltraSonicGpioObject->gpio_control(GPIO_CMD_SET_BIT_DIR_INPUT, (void *)(1 << UltraSonicPin));
-                 uint32_t UltraSonicPinValue = 0;
-                 while (UltraSonicPinValue == 0) { pUltraSonicGpioObject->gpio_read(&UltraSonicPinValue, 1 << UltraSonicPin); }
+		timer_stop(TIMER_0);
+		pUltraSonicGpio->gpio_control(GPIO_CMD_SET_BIT_DIR_INPUT, (void *)(1 << UltraSonicPin));
+		uint32_t UltraSonicPinValue = 0;
+		while (UltraSonicPinValue == 0) { pUltraSonicGpio->gpio_read(&UltraSonicPinValue, 1 << UltraSonicPin); }
 		/**
 		 * }
 		 */
@@ -120,9 +118,7 @@ int main(void) {
 		 * {
 		 */
 		timer_start(TIMER_0, 0, MAX_COUNT);
-		while (UltraSonicPinValue != 0) { pUltraSonicGpioObject->gpio_read(&UltraSonicPinValue, 1 << UltraSonicPin); }
-
-		
+		while (UltraSonicPinValue != 0) { pUltraSonicGpio->gpio_read(&UltraSonicPinValue, 1 << UltraSonicPin); }
 		/**
 		 * }
 		 */
@@ -134,10 +130,10 @@ int main(void) {
 		 * 透過序列埠印出透過超音波測距得到的公分數
 		 * {
 		 */
-		 uint32_t DurationCnt;
-                 timer_current(TIMER_0, &DurationCnt);
-                 float Distance = ((float)DurationCnt * 17000) / CLK_CPU;
-                 EMBARC_PRINTF("Distance = %f\n", Distance);		
+		uint32_t DurationCnt;
+		timer_current(TIMER_0, &DurationCnt);
+		float Distance = ((float)DurationCnt * 17000) / CLK_CPU;
+		EMBARC_PRINTF("Distance = %f\n", Distance);
 		/**
 		 * }
 		 */
@@ -152,7 +148,7 @@ void Timer0_ISR() {
 	 * {
 	 */
 	timer_int_clear(TIMER_0);
-	isInterrupted = true;	
+	isInterrupted = true;
 	/**
 	 * }
 	 */

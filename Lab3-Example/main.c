@@ -8,7 +8,7 @@
 /**
  * 宣告或定義你喜歡的埠(port)與腳位(pin)供超音波測距模組使用
  * e.g.:
- * define UltraSonicPort DFSS_GPIO_8B2_ID
+ * #define UltraSonicPort DFSS_GPIO_8B2_ID
  * {
  */
 #define UltraSonicPort DFSS_GPIO_4B2_ID
@@ -21,7 +21,7 @@
  * 宣告 GPIO 物件
  * {
  */
-DEV_GPIO_PTR pUltraSonicGpioObject;
+DEV_GPIO_PTR pUltraSonicGpio;
 /**
  * }
  */
@@ -47,7 +47,7 @@ int main(void)
    * 初始化lcd_obj物件
    * {
    */
-  lcd_obj=LCD_Init(DFSS_IIC_0_ID); 
+  lcd_obj = LCD_Init(DFSS_IIC_0_ID);
   /**
    * }
    */
@@ -56,9 +56,9 @@ int main(void)
 	 * 獲得signal腳位的GPIO物件
 	 * 將signal腳位設為輸出腳位
 	 * {
-   */
-  pUltraSonicGpioObject = gpio_get_dev(UltraSonicPort);
-  pUltraSonicGpioObject->gpio_open((1 << UltraSonicPin));
+     */
+  pUltraSonicGpio = gpio_get_dev(UltraSonicPort);
+  pUltraSonicGpio->gpio_open((1 << UltraSonicPin));
   /**
 	 * }
 	 */
@@ -69,8 +69,7 @@ int main(void)
 		 * 將超音波signal腳位設為輸出
 		 * {
 		 */
-	  pUltraSonicGpioObject->gpio_control(GPIO_CMD_SET_BIT_DIR_OUTPUT, (void *)(1 << UltraSonicPin));
-    
+    pUltraSonicGpio->gpio_control(GPIO_CMD_SET_BIT_DIR_OUTPUT, (void *)(1 << UltraSonicPin));
     /**
 		 * }
 		 */
@@ -82,10 +81,10 @@ int main(void)
 		 * 啟動TIMER_0，設定為啟動中斷(Interrupt Enabled)模式，並且在5us(5*10^-6s)時中斷
 		 * {
 		 */
-	  timer_stop(TIMER_0);
-	  int_handler_install(INTNO_TIMER0, Timer0_ISR);
-	  int_enable(INTNO_TIMER0);
-	  timer_start(TIMER_0, TIMER_CTRL_IE, 0.000005 * CLK_CPU);
+    timer_stop(TIMER_0);
+    int_handler_install(INTNO_TIMER0, Timer0_ISR);
+    int_enable(INTNO_TIMER0);
+    timer_start(TIMER_0, TIMER_CTRL_IE, 0.000005 * CLK_CPU);
     /**
 		 * }
 		 */
@@ -94,8 +93,7 @@ int main(void)
 		 * 將超音波signal腳位設為高電位
 		 * {
 		 */
-                pUltraSonicGpioObject->gpio_write(1 << UltraSonicPin, 1 << UltraSonicPin);
-    
+    pUltraSonicGpio->gpio_write(1 << UltraSonicPin, 1 << UltraSonicPin);
     /**
 		 * }
 		 */
@@ -106,9 +104,9 @@ int main(void)
 		 * 將signal pin腳設定為低電位
 		 * {
 		*/
-		isInterrupted = false;
-                while (!isInterrupted) ;		
-		pUltraSonicGpioObject->gpio_write(0 << UltraSonicPin, 1 << UltraSonicPin);
+    isInterrupted = false;
+    while (!isInterrupted) ;
+    pUltraSonicGpio->gpio_write(0 << UltraSonicPin, 1 << UltraSonicPin);
     /**
 		 * }
 		 */
@@ -120,10 +118,10 @@ int main(void)
 		 * 等待signal腳位變為高電位
 		 * {
 		 */
-    		 timer_stop(TIMER_0);
-                 pUltraSonicGpioObject->gpio_control(GPIO_CMD_SET_BIT_DIR_INPUT, (void *)(1 << UltraSonicPin));
-                 uint32_t UltraSonicPinValue = 0;
-                 while (UltraSonicPinValue == 0) { pUltraSonicGpioObject->gpio_read(&UltraSonicPinValue, 1 << UltraSonicPin); }
+    timer_stop(TIMER_0);
+    pUltraSonicGpio->gpio_control(GPIO_CMD_SET_BIT_DIR_INPUT, (void *)(1 << UltraSonicPin));
+    uint32_t UltraSonicPinValue = 0;
+    while (UltraSonicPinValue == 0) { pUltraSonicGpio->gpio_read(&UltraSonicPinValue, 1 << UltraSonicPin); }
     /**
 		 * }
 		 */
@@ -133,9 +131,8 @@ int main(void)
 		 * 待signal腳位變為低電位
 		 * {
 		 */
-		timer_start(TIMER_0, 0, MAX_COUNT);
-		while (UltraSonicPinValue != 0) { pUltraSonicGpioObject->gpio_read(&UltraSonicPinValue, 1 << UltraSonicPin); }
-    
+    timer_start(TIMER_0, 0, MAX_COUNT);
+    while (UltraSonicPinValue != 0) { pUltraSonicGpio->gpio_read(&UltraSonicPinValue, 1 << UltraSonicPin); }
     /**
 		 * }
 		 */
@@ -146,10 +143,9 @@ int main(void)
 		 * 再乘以 340(m/s)*100(cm/m)/2(來回) 得到公分數
 		 * {
 		 */
-		 uint32_t DurationCnt;
-                 timer_current(TIMER_0, &DurationCnt);
-                 float Distance = ((float)DurationCnt * 17000) / CLK_CPU;
-                 EMBARC_PRINTF("Distance = %f\n", Distance);		
+    uint32_t DurationCnt;
+    timer_current(TIMER_0, &DurationCnt);
+    float Distance = ((float)DurationCnt * 17000) / CLK_CPU;
     /**
 		 * }
 		 */
@@ -162,11 +158,11 @@ int main(void)
      * 將距離透過LCD印出，因為無法使用%f格式，所以要用%d.%d印出末兩位
 		 * {
 		 */
-		 if (Distance > 15) { lcd_obj->set_Color(GREEN); }
-		 else { lcd_obj->set_Color(RED); }
-		 lcd_obj->clear();
-		 lcd_obj->set_CursorPos(0, 0);
-		 lcd_obj->printf("%d.%d", (int)(Distance), (int)(Distance * 100) % 100); 
+    if (Distance > 15) { lcd_obj->set_Color(GREEN); }
+    else { lcd_obj->set_Color(RED); }
+    lcd_obj->clear();
+    lcd_obj->set_CursorPos(0, 0);
+    lcd_obj->printf("%d.%d", (int)(Distance), (int)(Distance * 100) % 100);
     /**
 		 * }
 		 */
@@ -185,8 +181,8 @@ void Timer0_ISR()
 	 * 設定該設定的變數
 	 * {
 	 */
-	timer_int_clear(TIMER_0);
-	isInterrupted = true;	
+  timer_int_clear(TIMER_0);
+  isInterrupted = true;
   /**
 	 * }
 	 */
